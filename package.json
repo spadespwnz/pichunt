@@ -1,0 +1,23 @@
+{
+  "name": "pichunt",
+  "version": "0.0.1",
+  "description": "Server for Pichunt app",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SPaDeS",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.393.0",
+    "body-parser": "^1.18.3",
+    "busboy": "^0.3.0",
+    "connect-busboy": "0.0.2",
+    "cookie-parser": "^1.4.3",
+    "crypto": "^1.0.1",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.4.0",
+    "mongodb": "^3.1.12"
+  }
+}
