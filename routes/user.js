@@ -8,6 +8,29 @@ router.get('/logout', function(req,res){
 	res.clearCookie("token");
 	res.redirect('/user/login');
 });
+
+
+router.get('/list', function(req,res){
+	var db = req.db;
+	user_data = {name:"name"}
+	db.collection(process.env.MONGODB_USER_COLLECTION).find().toArray(function(err, findResult){
+		if (err){
+			res.send("ERR")
+			return;
+		}
+		res.send(findResult);
+
+	})
+})
+
+router.get('/random', function(req,res){
+	var db = req.db;
+	user_data = {name:"name"}
+	db.collection(process.env.MONGODB_USER_COLLECTION).insert(user_data, function(err, insertResult){
+		res.send(insertResult);
+
+	})
+})
 router.get('/tokenCheck/:token', function(req,res){
   var token = req.params.token;
 
