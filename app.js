@@ -21,6 +21,7 @@ app.use(bodyParser.json({limit: '50mb'}))
 app.use(cookieParser())
 app.set('jwt_secret', process.env.JWT_SECRET || 'randosecretkey');
 
+console.log("PORT:"+process.env.PORT)
 const sshConfig = {
   username: process.env.SSH_USERNAME,
   host: process.env.SSH_HOST,
@@ -38,6 +39,8 @@ if (enviro == "prod"){
       return;
     }
     console.log("SSH Connected: "+server)
+
+
 
     MongoClient.connect(mdb_url, {useNewUrlParser: true},function(err,client){
       if (err){
