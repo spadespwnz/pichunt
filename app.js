@@ -21,6 +21,7 @@ app.use(cookieParser())
 app.set('jwt_secret', process.env.JWT_SECRET || 'randosecretkey');
 
 //Enable MongoDB
+console.log("MONGO URL:"+mdb_url)
 MongoClient.connect(mdb_url, function(err,client){
   if (err){
     console.log(err)
