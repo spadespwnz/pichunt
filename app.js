@@ -31,7 +31,7 @@ const sshConfig = {
   localPort:3001
 }
 if (enviro == "prod"){
-  var mdb_url = process.env.MONGODB_URI;
+  var mdb_url = process.env.MONGODB_URI+3001;
   var server = tunnel(sshConfig, function(err,server){
     if (err){
       console.log("SSH Connection Error")
