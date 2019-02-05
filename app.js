@@ -21,7 +21,6 @@ app.use(bodyParser.json({limit: '50mb'}))
 app.use(cookieParser())
 app.set('jwt_secret', process.env.JWT_SECRET || 'randosecretkey');
 
-console.log("PORT:"+process.env.PORT)
 const sshConfig = {
   username: process.env.SSH_USERNAME,
   host: process.env.SSH_HOST,
@@ -52,6 +51,7 @@ if (enviro == "prod"){
         database = client.db(process.env.MONGODB_DB);
       }
     })
+
 
   })
 } else{
