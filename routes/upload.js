@@ -96,7 +96,7 @@ router.post('/find_nearby_hunts',function(req,res){
 	var returnData = {"code":0};
 	var lat = req.body.lat;
 	var lng = req.body.lng;
-	db.collection(process.env.MONGODB_PICTURE_COLLECTION).find({loc:{ $geoWithin: { $centerSphere:[ [parseFloat(lng), parseFloat(lat)],2/6378.1 ] }}, owner:{ "$ne":username }}).toArray(function(err, cursor){
+	db.collection(process.env.MONGODB_PICTURE_COLLECTION).find({loc:{ $geoWithin: { $centerSphere:[ [parseFloat(lng), parseFloat(lat)],5/6378.1 ] }}, owner:{ "$ne":username }}).toArray(function(err, cursor){
 		if (err) {
 			console.log(err)
 			returnData.success = false;
