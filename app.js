@@ -19,8 +19,9 @@ app.use(busboy());
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json({limit: '50mb'}))
 app.use(cookieParser())
-app.set('jwt_secret', process.env.JWT_SECRET || 'randosecretkey');
-
+app.set('jwt_secret', process.env.JWT_SECRET || 'randosecretkey')
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
 const sshConfig = {
   username: process.env.SSH_USERNAME,
   host: process.env.SSH_HOST,
