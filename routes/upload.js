@@ -199,10 +199,21 @@ router.get('/my_captured_hunts', function(req,res){
 			res.send(returnData);
 			return;
 		}
-
-		var captured_list = userData.captures.map(function(item){
-			return new uid(item.capture_id);
-		})
+		if (userData == null){
+			returnData.success = false;
+			returnData.err = "Internal Database Error."
+			returnData.code = 202;
+			res.send(returnData)
+			return;
+		}
+		var captured_list;
+		if (userData.captures == null){
+			captured_list = [];
+		} else{
+			 captured_list = userData.captures.map(function(item){
+				return new uid(item.capture_id);
+			})
+		}
 
 		db.collection(process.env.MONGODB_PICTURE_COLLECTION).find({_id:{$in:captured_list}}).toArray(function(err, cursor){
 			if (err) {
