@@ -9,6 +9,7 @@ const S3_BUCKET = process.env.S3_BUCKET || 'spades-image-collection';
 var aws_secret;
 var aws_id;
 const INVALID_TOKEN = 201;
+const DATABASE_ERROR = 202;
 
 aws.config.update({
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -96,7 +97,38 @@ router.post('/find_nearby_hunts',function(req,res){
 	var returnData = {"code":0};
 	var lat = req.body.lat;
 	var lng = req.body.lng;
-	db.collection(process.env.MONGODB_PICTURE_COLLECTION).find({loc:{ $geoWithin: { $centerSphere:[ [parseFloat(lng), parseFloat(lat)],5/6378.1 ] }}, owner:{ "$ne":username }}).toArray(function(err, cursor){
+	/*
+	db.collection(process.env.MONGODB_PICTURE_COLLECTION)
+	.find(
+		{loc:{ $geoWithin: { $centerSphere:[ [parseFloat(lng), parseFloat(lat)],5/6378.1 ] }},
+		, owner:{ "$ne":username }}
+	)*/
+	db.collection(process.env.MONGODB_PICTURE_COLLECTION)
+		.aggregate(
+		[
+			{
+				$geoNear: {
+					near: {type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)]},
+					distanceField: "dist.calculated",
+					maxDistance: 5000,
+					spherical: true
+				}
+			},
+			{
+				$match:{
+					owner:{"$ne":username}
+				}
+			},
+			{
+				$match:{
+					"captured_by.username":{"$ne":username}
+				}
+			},
+
+		]
+		)
+
+	.toArray(function(err, cursor){
 		if (err) {
 			console.log(err)
 			returnData.success = false;
@@ -110,6 +142,33 @@ router.post('/find_nearby_hunts',function(req,res){
       res.send(returnData);
     }
 	});
+
+});
+router.post('/capture_hunt', function(req,res){
+	var db = req.db;
+	var username = req.decoded.username;
+	console.log("Username: "+username);
+	console.log(req.body);
+	var returnData = {"code":0};
+	var pic_uid = new uid(req.body._id);
+	db.collection(process.env.MONGODB_PICTURE_COLLECTION).findOne({_id:pic_uid}, function(err, searchResult){
+		if (err != null){
+			returnData.code = DATABASE_ERROR
+			returnData.err = "Internal Database Error";
+			returnData.err2 = err;
+			returnData.success = false;
+			res.send(returnData);
+			return;
+		}
+		var timestamp = new Date();
+		db.collection(process.env.MONGODB_USER_COLLECTION).update({"username":username},{"$push":{captures:{capture_time: timestamp, capture_id: pic_uid, _id: new uid()}}} )
+		db.collection(process.env.MONGODB_PICTURE_COLLECTION).update({_id:pic_uid},{"$push":{captured_by:{capture_time: timestamp, username:username}}} )
+		returnData.success = true;
+		returnData.id = pic_uid;
+		console.log(searchResult);
+		res.send(returnData);
+	})
+
 });
 router.get('/my_pictures', function(req,res){
 	var db = req.db;
@@ -128,6 +187,43 @@ router.get('/my_pictures', function(req,res){
     }
   })
 })
+router.get('/my_captured_hunts', function(req,res){
+	var db = req.db;
+	var username = req.decoded.username;
+	var returnData = {"code": 0};
+	db.collection(process.env.MONGODB_USER_COLLECTION).findOne({username:username}, function(err, userData){
+    if (err) {
+			returnData.success = false;
+			returnData.err = "Internal Database Error."
+			returnData.code = 202;
+			res.send(returnData);
+			return;
+		}
+
+		var captured_list = userData.captures.map(function(item){
+			return new uid(item.capture_id);
+		})
+
+		db.collection(process.env.MONGODB_PICTURE_COLLECTION).find({_id:{$in:captured_list}}).toArray(function(err, cursor){
+			if (err) {
+				returnData.success = false;
+				returnData.err = "Internal Database Error."
+				returnData.code = 202;
+				res.send(returnData);
+				return;
+			}
+
+			returnData.success = true;
+			returnData.data = cursor;
+	    res.send(returnData);
+		})
+
+
+
+
+  })
+})
+
 router.post('/new_picture', function(req,res){
   var db = req.db;
   var lat = req.body.lat;
@@ -160,8 +256,6 @@ router.post('/new_picture', function(req,res){
     }
   });
 });
-
-
 function getSign(fname,user,id, callback){
   ftype = 'image/jpg'
   var s3 = new aws.S3({signatureVersion: 'v4'});
