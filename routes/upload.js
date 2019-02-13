@@ -21,6 +21,7 @@ router.get('/clearAll', function(req,res){
   var db = req.db
   db.collection(process.env.MONGODB_PICTURE_COLLECTION).drop();
 	db.collection(process.env.MONGODB_USER_COLLECTION).drop();
+	db.collection(process.env.MONGODB_PICTURE_COLLECTION).createIndex({loc:"2dsphere"})
 	res.send("Cleared All Collections")
 })
 router.get('/picturelist', function(req,res){
@@ -259,7 +260,7 @@ router.post('/new_picture', function(req,res){
 					return
 				}
 				console.log(records.ops[0]);
-				db.collection(process.env.MONGODB_PICTURE_COLLECTION).createIndex({loc:"2dsphere"})
+
 				db.collection(process.env.MONGODB_USER_COLLECTION).update({"username":username},{"$push":{pictures:records.ops[0]._id}})
       });
 
